@@ -19,6 +19,7 @@ public class FrontServlet extends HttpServlet {
   public void setMappingUrls(HashMap<String, Mapping> mappingUrls) {
     MappingUrls = mappingUrls;
   }
+  
   protected void processRequest(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException { 
     response.setContentType("text/html");
     PrintWriter out = response.getWriter();
