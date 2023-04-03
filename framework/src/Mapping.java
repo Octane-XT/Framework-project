@@ -5,6 +5,15 @@ import java.util.HashMap;
 public class Mapping {
     String className ;
     String Method ;
+
+    public Mapping() {
+    }
+
+    public Mapping(String className, String method) {
+        this.className = className;
+        this.Method = method;
+    }
+
     public String getClassname() {
         return className;
     }
