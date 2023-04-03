@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import utility.*;
+import view.ModelView;
 import etu1823.framework.Mapping;
 
 public class FrontServlet extends HttpServlet {
