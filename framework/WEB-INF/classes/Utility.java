@@ -50,11 +50,11 @@ public class Utility {
      
     public HashMap<String, Mapping> initHashmap(String path) throws Exception {
         HashMap<String, Mapping> hm = new HashMap<String, Mapping>();
-        Mapping mapping = new Mapping();
         List<Class<?>> loadedClasses = loadAllClasses(path, "");
         for (Class<?> cl : loadedClasses) {
             for (Method method : cl.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Urls.class)) {
+                    Mapping mapping = new Mapping();
                     Urls annotation = method.getAnnotation(Urls.class);
                     mapping.setClassname(cl.getName());
                     mapping.setMethod(method.getName());
@@ -71,11 +71,9 @@ public class Utility {
             String key = entry.getKey();
             Mapping value = entry.getValue();
             if (url.matches(key)) {
+                System.out.println(value.getMethod());
                 return value;
-            }
-            else{
-                throw new Exception("404 NOT FOUND.");
-            }
+            }  
         }
         return null;
     }
@@ -83,15 +81,15 @@ public class Utility {
     public ModelView invokeMappedMethod(HashMap<String, Mapping> hashMap, String url) throws Exception {
         Mapping mapping = getMappingForUrl(hashMap, url);
         if (mapping != null) {
-            String className = mapping.getClassname();
-            String methodName = mapping.getMethod();
-            Class<?> clazz = Class.forName(className);
-            Method method = clazz.getMethod(methodName);
+            Class<?> clazz = Class.forName(mapping.getClassname());
+            Method method = clazz.getMethod(mapping.getMethod());
             Object instance = clazz.newInstance();
             ModelView r = (ModelView) method.invoke(instance);
             return r;
         }
-        return null;
+        else{
+            throw new Exception("This page does not exist...");
+        }
     }
     
 }
