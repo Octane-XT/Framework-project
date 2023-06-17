@@ -7,6 +7,6 @@
     <title>Document</title>
 </head>
 <body>
-    List employe
+    Add employe
 </body>
 </html>
