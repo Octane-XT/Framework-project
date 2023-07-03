@@ -8,5 +8,14 @@
 </head>
 <body>
     Add employe
+    <form method="POST" action="Emp-save.go">
+        <p>
+            Nom : <input type="text" name="Nom">
+        </p>
+        <p>
+            Age : <input type="number" name="Age">
+        </p>
+        <input type="submit" value="Envoyer">     
+    </form>
 </body>
 </html>
