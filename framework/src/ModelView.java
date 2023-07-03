@@ -3,7 +3,7 @@ package view;
 public class ModelView {
     String View;
 
-    public String getView()throws Exception {
+    public String getView() {
         return View;
     }
 

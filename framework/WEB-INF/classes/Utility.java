@@ -64,32 +64,5 @@ public class Utility {
             }
         }
         return hm;
-    }
-
-    public Mapping getMappingForUrl(HashMap<String, Mapping> hashMap, String url)throws Exception {
-        for (Map.Entry<String, Mapping> entry : hashMap.entrySet()) {
-            String key = entry.getKey();
-            Mapping value = entry.getValue();
-            if (url.matches(key)) {
-                System.out.println(value.getMethod());
-                return value;
-            }  
-        }
-        return null;
-    }
-
-    public ModelView invokeMappedMethod(HashMap<String, Mapping> hashMap, String url) throws Exception {
-        Mapping mapping = getMappingForUrl(hashMap, url);
-        if (mapping != null) {
-            Class<?> clazz = Class.forName(mapping.getClassname());
-            Method method = clazz.getMethod(mapping.getMethod());
-            Object instance = clazz.newInstance();
-            ModelView r = (ModelView) method.invoke(instance);
-            return r;
-        }
-        else{
-            throw new Exception("This page does not exist...");
-        }
-    }
-    
+    }  
 }

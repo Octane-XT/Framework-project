@@ -39,12 +39,13 @@ public class FrontServlet extends HttpServlet {
     String url = u.splitUrl(request.getRequestURL().toString()); 
     ModelView mv = new ModelView();
     try {
-      mv = u.invokeMappedMethod(getMappingUrls(), url); 
+      mv = u.invokeMappedMethod(getMappingUrls(), url);  
       RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
-      dispatcher.forward(request, response); 
+      dispatcher.forward(request, response);
     } catch (Exception e) {
-      out.println(e.getMessage());
-    } 
+      e.getMessage();
+    }
+    
   }
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException { 
