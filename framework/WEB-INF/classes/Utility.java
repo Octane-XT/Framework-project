@@ -2,33 +2,25 @@ package utility;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.nio.file.Paths;
-import java.nio.file.Path;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.*;
-import org.w3c.dom.*;
-
-import java.lang.annotation.Annotation;
-
+import annotation.Param;
 import annotation.Urls;
 import etu1823.framework.Mapping;
-import view.ModelView;
 
 public class Utility {
 
-    public String splitUrl(String url){
+    public static String splitUrl(String url){
         String[] split = url.split("/",-1);
         return split[split.length-1] ;
     }
 
-    public List<Class<?>> loadAllClasses(String projectDirectory, String pkg) throws Exception {
+    public static List<Class<?>> loadAllClasses(String projectDirectory, String pkg) throws Exception {
         List<Class<?>> loadedClasses = new ArrayList<>();
         File directoryPath = new File(projectDirectory);
         File[] listFiles = directoryPath.listFiles();
@@ -48,7 +40,7 @@ public class Utility {
         return loadedClasses;
     }
      
-    public HashMap<String, Mapping> initHashmap(String path) throws Exception {
+    public static HashMap<String, Mapping> initHashmap(String path) throws Exception {
         HashMap<String, Mapping> hm = new HashMap<String, Mapping>();
         List<Class<?>> loadedClasses = loadAllClasses(path, "");
         for (Class<?> cl : loadedClasses) {
@@ -64,32 +56,42 @@ public class Utility {
             }
         }
         return hm;
-    }
+    }  
 
-    public Mapping getMappingForUrl(HashMap<String, Mapping> hashMap, String url)throws Exception {
-        for (Map.Entry<String, Mapping> entry : hashMap.entrySet()) {
+    public static Mapping getMappingForUrl(String url, HashMap<String, Mapping> MappingUrls) throws Exception {
+        for (Map.Entry<String, Mapping> entry : MappingUrls.entrySet()) {
             String key = entry.getKey();
             Mapping value = entry.getValue();
             if (url.matches(key)) {
-                System.out.println(value.getMethod());
                 return value;
-            }  
+            }
         }
         return null;
     }
 
-    public ModelView invokeMappedMethod(HashMap<String, Mapping> hashMap, String url) throws Exception {
-        Mapping mapping = getMappingForUrl(hashMap, url);
-        if (mapping != null) {
-            Class<?> clazz = Class.forName(mapping.getClassname());
-            Method method = clazz.getMethod(mapping.getMethod());
-            Object instance = clazz.newInstance();
-            ModelView r = (ModelView) method.invoke(instance);
-            return r;
+    public static String getParamName(Parameter parameter) {
+        Param paramAnnotation = parameter.getAnnotation(Param.class);
+        if (paramAnnotation != null) {
+            return paramAnnotation.ParamName();
         }
-        else{
-            throw new Exception("This page does not exist...");
-        }
+        return parameter.getName();
     }
-    
+
+    public static Object convertParamValue(String paramValue, Class<?> paramType) {
+        if (paramValue == null) {
+            return null;
+        }
+        if (paramType == int.class || paramType == Integer.class) {
+            return Integer.parseInt(paramValue);
+        } else if (paramType == Double.class) {
+            return Double.parseDouble(paramValue);
+        } else if (paramType == Float.class) {
+            return Float.parseFloat(paramValue);
+        } else if (paramType == String.class) {
+            return paramValue;
+        } else if (paramType == Date.class) {
+            return new Date();
+        } 
+        return null;
+    }
 }

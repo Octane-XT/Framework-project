@@ -8,5 +8,17 @@
 </head>
 <body>
     Add employe
+    <form method="POST" action="Emp-save.go" enctype="multipart/form-data">
+        <p>
+            Nom : <input type="text" name="Nom">
+        </p>
+        <p>
+            Age : <input type="number" name="Age">
+        </p>
+        <p>
+            File : <input type="file" name="File">
+        </p>
+        <input type="submit" value="Envoyer">     
+    </form>
 </body>
 </html>
