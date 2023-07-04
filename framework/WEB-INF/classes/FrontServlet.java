@@ -22,6 +22,7 @@ import view.ModelView;
 @MultipartConfig
 public class FrontServlet extends HttpServlet {
   HashMap<String,Mapping> MappingUrls ;
+  HashMap<String, Object> singleton;
   
   public HashMap<String, Mapping> getMappingUrls() {
     return MappingUrls;
@@ -31,13 +32,22 @@ public class FrontServlet extends HttpServlet {
     MappingUrls = mappingUrls;
   }
 
+  public HashMap<String, Object> getSingleton() {
+    return singleton;
+  }
+
+  public void setSingleton(HashMap<String, Object> annotedClass) {
+    singleton = annotedClass;
+  }
+
   public void init() throws ServletException {
     ServletContext context = getServletContext();
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     try {
       String path = classLoader.getResource("").getPath();
       path = URLDecoder.decode(path, "UTF-8");
-      this.setMappingUrls(Utility.initHashmap(path));
+      setMappingUrls(Utility.initHashmap(path));
+      setSingleton(Utility.getAnnotatedClasses(path));
     } catch (Exception e) {
       e.getMessage();
     } 
@@ -48,8 +58,7 @@ public class FrontServlet extends HttpServlet {
     PrintWriter out = response.getWriter();
     String url = Utility.splitUrl(request.getRequestURL().toString()); 
     if (MappingUrls.containsKey(url)==true) {
-      try {
-        
+      try {    
         ModelView mv = invokeMappedMethod(request,this.getMappingUrls(), url); 
         if(mv.getData() instanceof HashMap){
           sendDataTo(request,mv);
@@ -70,26 +79,16 @@ public class FrontServlet extends HttpServlet {
   }
 
   public void setDataFrom(HttpServletRequest request,Object obj)throws Exception{  
-      for (Field field : obj.getClass().getDeclaredFields() ) {
-        String methodName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
-        if(field.getType()==FileUpload.class){
-          FileUpload fileUpload = new FileUpload();
-          Part filePart = request.getPart(field.getName());
-          if (filePart != null && isFilePart(filePart)) {
-            String fileName = filePart.getSubmittedFileName();
-            byte[] fileData = filePart.getInputStream().readAllBytes();
-            fileUpload.setNom(fileName);
-            fileUpload.setData(fileData);
-            Method setter = obj.getClass().getMethod(methodName, FileUpload.class);
-            setter.invoke(obj, fileUpload);
-          }
-        }else {
-            Method setter = obj.getClass().getMethod(methodName, field.getType());
-            Object paramValue = Utility.convertParamValue(request.getParameter(field.getName()),field.getType());
-            setter.invoke(obj, paramValue);
-        }
-      }
+    Enumeration<String> parameterNames = request.getParameterNames();
+    while (parameterNames.hasMoreElements()) {
+        String paramName = parameterNames.nextElement();
+        String methodName = "set" + paramName.substring(0, 1).toUpperCase() + paramName.substring(1);
+        System.out.println(obj.getClass().getDeclaredField(paramName).getType());
+        Method setter = obj.getClass().getMethod(methodName, obj.getClass().getDeclaredField(paramName).getType());
+        Object paramValue = Utility.convertParamValue(request.getParameter(paramName), obj.getClass().getDeclaredField(paramName).getType());
+        setter.invoke(obj, paramValue);
     }
+  }
 
   public void sendDataTo(HttpServletRequest request,ModelView mv)throws Exception{  
     for (Map.Entry<String, Object> entry : mv.getData().entrySet()){
@@ -118,6 +117,19 @@ public class FrontServlet extends HttpServlet {
     ModelView r = null;
     if (mapping != null) {
         Class<?> clazz = Class.forName(mapping.getClassname());
+        Object instance = null;
+        if(Utility.isSingleton(clazz)){
+          if(getSingleton().containsKey(clazz.getSimpleName())){
+            if(getSingleton().get(clazz.getSimpleName())==null){
+              instance = clazz.newInstance();
+              getSingleton().replace(clazz.getSimpleName(), null, instance);
+            }else{
+              instance = getSingleton().get(clazz.getSimpleName());
+            }
+          }else{
+            instance = clazz.newInstance();
+          }
+        }
         Method methode = null;
         for (Method m : clazz.getDeclaredMethods()) {
             if (mapping.getMethod() == m.getName()) {
@@ -127,7 +139,6 @@ public class FrontServlet extends HttpServlet {
         if (methode == null)
             throw new Exception("aucune methode ne correspond à " + mapping.getMethod());
 
-        Object instance = clazz.getConstructor().newInstance();
         if (methode.getParameters().length > 0) {
           r = (ModelView) methode.invoke(instance, extractParameters(request,methode));
         }else{

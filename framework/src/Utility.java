@@ -2,25 +2,33 @@ package utility;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
-import annotation.Param;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+
+import java.lang.annotation.Annotation;
+
 import annotation.Urls;
 import etu1823.framework.Mapping;
+import view.ModelView;
 
 public class Utility {
 
-    public static String splitUrl(String url){
+    public String splitUrl(String url){
         String[] split = url.split("/",-1);
         return split[split.length-1] ;
     }
 
-    public static List<Class<?>> loadAllClasses(String projectDirectory, String pkg) throws Exception {
+    public List<Class<?>> loadAllClasses(String projectDirectory, String pkg) throws Exception {
         List<Class<?>> loadedClasses = new ArrayList<>();
         File directoryPath = new File(projectDirectory);
         File[] listFiles = directoryPath.listFiles();
@@ -40,13 +48,13 @@ public class Utility {
         return loadedClasses;
     }
      
-    public static HashMap<String, Mapping> initHashmap(String path) throws Exception {
+    public HashMap<String, Mapping> initHashmap(String path) throws Exception {
         HashMap<String, Mapping> hm = new HashMap<String, Mapping>();
+        Mapping mapping = new Mapping();
         List<Class<?>> loadedClasses = loadAllClasses(path, "");
         for (Class<?> cl : loadedClasses) {
             for (Method method : cl.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Urls.class)) {
-                    Mapping mapping = new Mapping();
                     Urls annotation = method.getAnnotation(Urls.class);
                     mapping.setClassname(cl.getName());
                     mapping.setMethod(method.getName());
@@ -56,42 +64,34 @@ public class Utility {
             }
         }
         return hm;
-    }  
+    }
 
-    public static Mapping getMappingForUrl(String url, HashMap<String, Mapping> MappingUrls) throws Exception {
-        for (Map.Entry<String, Mapping> entry : MappingUrls.entrySet()) {
+    public Mapping getMappingForUrl(HashMap<String, Mapping> hashMap, String url)throws Exception {
+        for (Map.Entry<String, Mapping> entry : hashMap.entrySet()) {
             String key = entry.getKey();
             Mapping value = entry.getValue();
             if (url.matches(key)) {
                 return value;
             }
+            else{
+                throw new Exception("404 NOT FOUND.");
+            }
         }
         return null;
     }
 
-    public static String getParamName(Parameter parameter) {
-        Param paramAnnotation = parameter.getAnnotation(Param.class);
-        if (paramAnnotation != null) {
-            return paramAnnotation.ParamName();
+    public ModelView invokeMappedMethod(HashMap<String, Mapping> hashMap, String url) throws Exception {
+        Mapping mapping = getMappingForUrl(hashMap, url);
+        if (mapping != null) {
+            String className = mapping.getClassname();
+            String methodName = mapping.getMethod();
+            Class<?> clazz = Class.forName(className);
+            Method method = clazz.getMethod(methodName);
+            Object instance = clazz.newInstance();
+            ModelView r = (ModelView) method.invoke(instance);
+            return r;
         }
-        return parameter.getName();
-    }
-
-    public static Object convertParamValue(String paramValue, Class<?> paramType) {
-        if (paramValue == null) {
-            return null;
-        }
-        if (paramType == int.class || paramType == Integer.class) {
-            return Integer.parseInt(paramValue);
-        } else if (paramType == Double.class) {
-            return Double.parseDouble(paramValue);
-        } else if (paramType == Float.class) {
-            return Float.parseFloat(paramValue);
-        } else if (paramType == String.class) {
-            return paramValue;
-        } else if (paramType == Date.class) {
-            return new Date();
-        } 
         return null;
     }
+    
 }
