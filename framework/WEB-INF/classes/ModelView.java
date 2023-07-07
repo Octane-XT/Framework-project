@@ -5,6 +5,7 @@ import java.util.HashMap;
 public class ModelView {
     String View;
     HashMap<String,Object> data;
+    boolean Json = false;
 
     public ModelView() {
         this.data = new HashMap<>();
@@ -28,6 +29,14 @@ public class ModelView {
 
     public void addItem(String key, Object value){
         this.data.put(key,value);
+    }
+
+    public boolean isJson(){
+        return Json;
+    }
+    
+    public void setJson(boolean value){
+        Json = value;
     }
 
 }

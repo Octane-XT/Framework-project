@@ -9,6 +9,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import annotation.Param;
 import annotation.Scope;
@@ -124,6 +126,15 @@ public class Utility {
             }
         }
         return false;
+    }
+
+    public String ObjtoJson(Object obj){
+        try {
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            return gson.toJson(obj);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
 }

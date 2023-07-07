@@ -79,6 +79,13 @@ public class FrontServlet extends HttpServlet {
         if(mv.getData() instanceof HashMap){
           sendDataTo(request,mv);
         }
+        if(mv.isJson()== true){
+          String json = Utility.ObjtoJson();
+          response.setContentType("application/json");
+          response.setCharacterEncoding("UTF=8");
+          out.print(json);
+          out.flush();
+        }
         RequestDispatcher dispatcher = request.getRequestDispatcher(mv.getView());
         dispatcher.forward(request, response);
       } catch (Exception e) {
