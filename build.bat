@@ -1,8 +1,10 @@
-
-javac -d temp framework/src/*.java
+path = "C:\Users\Octane\Desktop\Projet_MrNaina"
+cd %path%
+mkdir temp
 cd temp
-jar -cf ../test-framework/WEB-INF/lib/fw.jar .
-cd ..
-rmdir /s /q temp
+mkdir WEB-INF
+cd WEB-INF
+mkdir classes lib
+
 
 

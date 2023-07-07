@@ -1,6 +1,7 @@
 package utility;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import annotation.Param;
+import annotation.Scope;
 import annotation.Urls;
 import etu1823.framework.Mapping;
 
@@ -94,4 +96,34 @@ public class Utility {
         } 
         return null;
     }
+
+    public static HashMap<String, Object> getAnnotatedClasses(String path)throws Exception {
+        HashMap<String, Object> annotatedClasses = new HashMap<>();
+        try {
+            List<Class<?>> loadedClasses = loadAllClasses(path, "");
+            for (Class<?> clazz : loadedClasses) {
+                if (clazz.isAnnotationPresent(Scope.class)) {
+                    annotatedClasses.put(clazz.getSimpleName(), null);
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return annotatedClasses;
+    }
+
+    public static boolean isSingleton(Class<?> clazz) {
+        Annotation[] annotations = clazz.getDeclaredAnnotations();
+        for (Annotation annotation : annotations) {
+            if (annotation instanceof Scope) {
+                Scope scopeAnnotation = (Scope) annotation;
+                String scopeValue = scopeAnnotation.value();
+                if ("singleton".equals(scopeValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
